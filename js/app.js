@@ -1,129 +1,128 @@
 var calculadora = function(){
   var teclas = document.querySelectorAll(".tecla");
-  var tecla_actual;
-  var en_memoria = "";
-  var ultimo_numero = "";
-  var operacion = "";
-  var resultado;
-
+  var en_memoria, operacion_anterior, mostrar_resultado, tecla_actual, tecla_presionada, info_pantalla, ultima_operacion, ultimo_numero_digitado, operacion, resultado;
+  var operaciones_validas = ["mas" ,"menos", "por", "dividido"];
   function init(){
     for(var x=0; x<teclas.length; x++){
       //Agregamos los listener a las teclas de clase "tecla"
-        teclas[x].addEventListener("click", obtener_tecla);
+        teclas[x].addEventListener("click", obtenerTecla);
         teclas[x].addEventListener("mousedown", function(){this.classList.add("seleccionada");
       });
     }
-	}
-
-  function ejecutar_operacion(){
-    alert("en_memoria ejecuta: " + en_memoria);
-    if (!isNaN(resultado) && resultado.length > 0){
-      if (!isNaN(en_memoria) && operacion.length > 0){
-        en_memoria = parseFloat(en_memoria);
-        resultado = parseFloat(resultado);
-        switch (operacion) {
-          case "mas":
-            resultado = en_memoria + parseFloat(ultimo_numero);
-            break;
-          case "menos":
-            resultado = en_memoria - parseFloat(ultimo_numero);
-            break;
-            case "por":
-              resultado = en_memoria * parseFloat(ultimo_numero);
-              break;
-              case "dividido":
-                resultado = en_memoria / parseFloat(ultimo_numero);
-                //alert(resultado);
-                break;
-          default:
-        }
-        resultado = resultado + "";
-        alert(resultado.length);
-        if (resultado.length > 8) resultado = resultado.substr(0,8);
-        //resultado = resultado;
-        en_memoria = resultado;
-      }
-    }
+    inicializacionVariables();
   }
 
-  function obtener_tecla(){
-    tecla_actual = this;
-    setTimeout(function(){tecla_actual.classList.remove("seleccionada"); }, 400);
-    resultado = document.querySelector("#display").textContent;
-    var tecla_presionada = tecla_actual.id;
+  function inicializacionVariables(){
+    en_memoria = ""; operacion_anterior = ""; mostrar_resultado = false; resultado  = ""; info_pantalla = "0"; operacion = ""; ultimo_numero_digitado = "0";
+  }
 
-    //alert(resultado + " / r: " + !isNaN(tecla_presionada) + "  " + tecla_presionada);
+  function calcular(){
+    //alert("operacion valida " + ultimo_numero_digitado);
+    info_pantalla = "";
+    ultimo_numero_digitado = parseFloat(ultimo_numero_digitado);
 
-    if (!isNaN(tecla_presionada) && resultado.length < 8){
-      //alert(resultado);
-      if (resultado == "0"){
-        if (tecla_presionada != "0"){
-          if (resultado.indexOf(".") == -1){
-            resultado  = tecla_presionada;
-          }
-          else{
-            resultado  = resultado + tecla_presionada;
-          }
-        }
-      }else{
-        //alert(en_memoria);
-        resultado  = resultado + tecla_presionada;
-      }
-      ultimo_numero = resultado;
+    if (operacion == ""){
+      //resultado = ultimo_numero_digitado;
     }else{
-      switch (tecla_presionada) {
-        case "on":
-          resultado  = "0";
-          en_memoria = "";
-          operacion = "";
-          break;
-        case "punto":
-          if (resultado.indexOf(".") == -1 &&  resultado.length < 8){
-            resultado += ".";
-          }
-          break;
-        case "sign":
-          if (resultado.indexOf("-") == -1){
-            if (resultado != "0")
-              resultado = "-" + resultado;
-          }
-          else{
-            resultado = resultado.replace("-" ,"");
-          }
-          break;
+    }
+
+    //alert("antes: resultado: " + resultado + ", ultimo_numero_digitado: " + ultimo_numero_digitado);
+
+    if (resultado != ""){
+      switch (operacion) {
         case "mas":
-          en_memoria = resultado;
-          //alert("en_memoria mas: " + en_memoria);
-          resultado = "";
-          operacion = "mas";
+          resultado += ultimo_numero_digitado;
           break;
         case "menos":
-            en_memoria = resultado;
-            //alert("en_memoria mas: " + en_memoria);
-            resultado = "";
-            operacion = "menos";
-            break;
-            case "por":
-                en_memoria = resultado;
-                //alert("en_memoria mas: " + en_memoria);
-                resultado = "";
-                operacion = "por";
-                break;
-                case "dividido":
-                    en_memoria = resultado;
-                    //alert("en_memoria mas: " + en_memoria);
-                    resultado = "";
-                    operacion = "dividido";
-                    break;
-        case "igual":
-          //alert("en_memoria igual: " + en_memoria);
-          ejecutar_operacion();
-          //operacion = "";
+          resultado -= ultimo_numero_digitado;
           break;
+          case "por":
+            resultado = resultado * ultimo_numero_digitado;
+            break;
+            case "dividido":
+              resultado = resultado / ultimo_numero_digitado;
+              //alert(resultado);
+              break;
         default:
       }
     }
-    document.querySelector("#display").innerHTML = resultado;
+    else{
+      resultado = ultimo_numero_digitado;
+    }
+
+    //alert("DESPUES: resultado: " + resultado + ", ultimo_numero_digitado: " + ultimo_numero_digitado);
+
+  }
+
+  function obtenerTecla(){
+    tecla_actual = this;
+    setTimeout(function(){tecla_actual.classList.remove("seleccionada"); }, 400);
+    tecla_presionada = tecla_actual.id;
+
+    if (!isNaN(tecla_presionada)){
+      //Verifica si la tecla presionada es un numero
+      info_pantalla = document.querySelector("#display").textContent;
+      //alert("tecla_presionada: " + tecla_presionada + "    " + !isNaN(tecla_presionada) + " && " + info_pantalla.length + "<"+ 8);
+      if (info_pantalla.length < 8){
+        if (mostrar_resultado){ info_pantalla = "";}
+        if (info_pantalla == "0"){
+          if (tecla_presionada != "0"){
+            if (info_pantalla.indexOf(".") == -1) info_pantalla  = tecla_presionada;
+          }
+        }else{
+          //alert("entra aqi");
+           info_pantalla  = info_pantalla + tecla_presionada;
+         }
+        ultimo_numero_digitado = info_pantalla;
+    }
+    }else{
+      //La tecla presionada es una operacion
+      switch (tecla_presionada) {
+        case "on":
+          inicializacionVariables();
+          break;
+        case "punto":
+          if (info_pantalla.indexOf(".") == -1 &&  info_pantalla.length < 8){
+            info_pantalla += ".";
+          }
+          break;
+        case "sign":
+          if (info_pantalla.indexOf("-") == -1)
+            if (info_pantalla != "0") info_pantalla = "-" + info_pantalla;
+          else info_pantalla = info_pantalla.replace("-" ,"");
+          break;
+        case "igual":
+          //alert("operacion: " +operacion);
+          if (operacion == "" && operacion_anterior != ""){
+            operacion = operacion_anterior;
+            ultimo_numero_digitado = en_memoria;
+            resultado = parseFloat(document.querySelector("#display").textContent);
+            //alert("dentro de && resultado: " + resultado + ", ultimo_numero_digitado: " + ultimo_numero_digitado + ", operacion: " + operacion);
+          }
+          if (operacion != ""){ calcular();
+            operacion = "";
+            mostrar_resultado = true;
+            info_pantalla = resultado;
+            if ((resultado + "").length >= 8)
+              info_pantalla = (resultado + "").substr(0,8);
+
+            en_memoria = ultimo_numero_digitado;
+            ultimo_numero_digitado = resultado;
+            resultado = "";
+          }
+          break;
+        default:
+          if (operaciones_validas.indexOf(tecla_presionada) > -1){
+            if (operacion == "") operacion = tecla_presionada;
+            calcular();
+            operacion = tecla_presionada;
+            mostrar_resultado = false;
+            operacion_anterior = operacion;
+
+          }
+      }
+    }
+    document.querySelector("#display").innerHTML = info_pantalla;
   }
   //Inicializamos por default la function init()
   init();
